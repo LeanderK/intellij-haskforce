@@ -3,7 +3,7 @@ package com.haskforce.cabal.highlighting;
 import com.intellij.lexer.FlexAdapter;
 
 /**
- * Created by crobbins on 8/2/14.
+ * The lexer for highlighting cabal files. The {@code _CabalSyntaxHighlightingLexer} gets auto-generated from the identically named lex file.
  */
 public class CabalSyntaxHighlightingLexer extends FlexAdapter {
     public CabalSyntaxHighlightingLexer() {

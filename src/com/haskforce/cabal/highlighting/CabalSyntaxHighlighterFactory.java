@@ -7,6 +7,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * This class is needed by IntelliJ to enable the syntax-highlighting.
+ */
 public class CabalSyntaxHighlighterFactory extends SyntaxHighlighterFactory {
     @NotNull
     @Override

@@ -13,6 +13,9 @@ import com.haskforce.cabal.lang.psi.CabalPsiUtil
 import com.haskforce.constants.GhcLanguageExtensions
 import com.haskforce.utils.SAMUtils
 
+/**
+ * Completion for Cabal files
+ */
 final class CabalCompletionContributor extends CompletionContributor {
 
   // Extends this class with completion for Cabal files.

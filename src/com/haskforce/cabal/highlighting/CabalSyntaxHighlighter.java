@@ -8,6 +8,9 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Stores the selected highlighting-colors for cabal-files.
+ */
 public class CabalSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey COLON = TextAttributesKey.createTextAttributesKey(
             "CABAL_COLON", DefaultLanguageHighlighterColors.OPERATION_SIGN);

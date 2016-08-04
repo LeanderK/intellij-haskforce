@@ -7,6 +7,9 @@ import com.intellij.psi.PsiElement
 import com.haskforce.cabal.lang.psi._
 import com.haskforce.cabal.lang.psi.CabalTypes._
 
+/**
+  * Highlights & Annotates Cabal Files.
+  */
 class CabalAnnotator extends Annotator {
 
   def annotate(el: PsiElement, h: AnnotationHolder): Unit = {

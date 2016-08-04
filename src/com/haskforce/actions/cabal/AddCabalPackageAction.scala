@@ -14,6 +14,9 @@ import com.intellij.openapi.vfs.{LocalFileSystem, VirtualFileManager}
 
 import scala.util.{Failure, Success, Try}
 
+/**
+ * Adds a cabal file to your project and configures it as an IntelliJ module.
+ */
 class AddCabalPackageAction extends AnAction with DumbAware {
   def actionPerformed(e: AnActionEvent) {
     Option(e.getProject).fold {
