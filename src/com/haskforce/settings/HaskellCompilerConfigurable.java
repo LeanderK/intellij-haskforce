@@ -87,6 +87,9 @@ public class HaskellCompilerConfigurable extends CompilerConfigurable {
         updateVersionInfoFields();
     }
 
+    /**
+     * initializes buildWith, tries to initializes it with stack and then falls back to cabal.
+     */
     private void initializeBuildWithButtons() {
         buildWith.add(buildWithStack);
         buildWith.add(buildWithCabal);
@@ -119,7 +122,6 @@ public class HaskellCompilerConfigurable extends CompilerConfigurable {
      * The setEnabledStack/CabalFields methods will toggle the other fields
      * as enabled so that the Stack and Cabal fields won't be enabled simultaneously.
      */
-
     private void setEnabledStackFields(boolean enabled) {
         setEnabledStackFields(enabled, true);
     }
@@ -248,6 +250,10 @@ public class HaskellCompilerConfigurable extends CompilerConfigurable {
         mySettings.setStackFile(stackFile.getText());
     }
 
+    /**
+     * validates the Configuration, throws an ConfigurationException if not valid
+     * @throws ConfigurationException gets thrown if not valid
+     */
     private void validate() throws ConfigurationException {
         if (buildWithCabal.isSelected()) {
             validateExecutable("cabal", cabalPath);
@@ -259,11 +265,23 @@ public class HaskellCompilerConfigurable extends CompilerConfigurable {
         }
     }
 
+    /**
+     * validates that a file exists and is executable
+     * @param name the name
+     * @param field additional information for the error message
+     * @throws ConfigurationException if the file does not exist
+     */
     private void validateExecutable(String name, TextAccessor field) throws ConfigurationException {
         if (new File(field.getText()).canExecute()) return;
         throw new ConfigurationException("Not a valid '" + name + "' executable: '" + field.getText() + "'");
     }
 
+    /**
+     * validates that a file exists
+     * @param name the name
+     * @param field additional information for the error message
+     * @throws ConfigurationException if the file does not exist
+     */
     private void validateFileExists(String name, TextAccessor field) throws ConfigurationException {
         if (new File(field.getText()).exists()) return;
         throw new ConfigurationException("'" + name + "' file does not exist: '" + field.getText() + "'");
