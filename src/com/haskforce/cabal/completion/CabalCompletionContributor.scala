@@ -40,6 +40,9 @@ final class CabalCompletionContributor extends CompletionContributor {
     result: CompletionResultSet
   ) {
 
+    /**
+      * adds all completions to the CompletionResultSet
+      */
     def run(): Unit = {
       if (completeExtensions()) return
     }
