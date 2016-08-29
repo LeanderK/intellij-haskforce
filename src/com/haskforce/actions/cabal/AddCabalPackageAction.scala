@@ -34,6 +34,11 @@ class AddCabalPackageAction extends AnAction with DumbAware {
 object AddCabalPackageAction {
   val TITLE: String = "Add Cabal Package"
 
+  /**
+    * returns a callback that creates the cabal-file and initializes it.
+    * @param project the project to create the cabal-file in
+    * @param getOptions the callback used to configure cabal init
+    */
   private def createCallback(project: Project)(getOptions: Project => AddCabalPackageOptions): Unit = {
     val options = getOptions(project)
     def display(notificationType: NotificationType, message: String) = {

@@ -26,6 +26,10 @@ class DiscoverCabalPackagesAction extends AnAction with DumbAware {
 object DiscoverCabalPackagesAction {
   val TITLE = "Discover Cabal Packages"
 
+  /**
+    * finds the orphaned cabal-files and displays a warning if none found and DiscoverCabalPackagesDialog if found.
+    * @param project the project to search in
+    */
   def run(project: Project): Unit = {
       findDiscoverableCabalFiles(project) match {
         case Nil => onNoCabalFiles()
@@ -47,6 +51,10 @@ object DiscoverCabalPackagesAction {
     )
   }
 
+  /**
+    * fires a notification which display the imported cabal-packages or none
+    * @param packageNames the cabal package-names
+    */
   private def onSuccess(packageNames: Seq[String]): Unit = {
     packageNames match {
       case Nil =>
@@ -81,10 +89,20 @@ object DiscoverCabalPackagesAction {
     )
   }
 
+  /**
+    * displays the DiscoverCabalPackagesDialog
+    * @param project the active project
+    * @param cabalFiles a list of the discovered Cabal-Files
+    */
   private def displayForm(project: Project, cabalFiles: Seq[VirtualFile]): Unit = {
     new DiscoverCabalPackagesDialog(project, cabalFiles, importCabalPackages(project))
   }
 
+  /**
+    * imports the cabal-packages and creates a Haskell module for each cabal package
+    * @param project the active project
+    * @param files the cabal packages
+    */
   private def importCabalPackages(project: Project)(files: Seq[VirtualFile]): Unit = {
     ApplicationManager.getApplication.runWriteAction({ () =>
       files.foreach(AddCabalPackageUtil.importCabalPackage(project))
