@@ -19,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.util.Collection;
 
+/**
+ * restarts GhcModi if one module is present or asks which to restart if multiple modules are present.
+ */
 public class RestartGhcModi extends AnAction implements DumbAware {
     private static final Logger LOG = Logger.getInstance(HaskellStylishFormatAction.class);
 

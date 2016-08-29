@@ -13,6 +13,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.psi.PsiFile;
 
+/**
+ * forces the update of the completion cache for an Haskell-file
+ */
 public class HaskellReloadCompletionCache extends AnAction implements DumbAware {
     private static final Logger LOG = Logger.getInstance(HaskellStylishFormatAction.class);
 
