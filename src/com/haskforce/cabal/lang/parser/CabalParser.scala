@@ -10,6 +10,9 @@ import com.intellij.psi.tree.IElementType
 import com.haskforce.cabal.lang.psi.CabalTypes._
 import com.haskforce.cabal.lang.psi._
 
+/**
+ * the cabal-parser used to create the cabal-AST
+ */
 final class CabalParser extends PsiParser {
 
   override def parse(root: IElementType, builder: PsiBuilder): ASTNode = {
@@ -22,12 +25,23 @@ final class CabalPsiBuilder(builder: PsiBuilder)
 
   val DEBUG = false
 
+  /**
+    * returns the corresponding PsiFile
+    * @return the PsiFile or none if not found
+    */
   def getPsiFile: Option[PsiFile] = {
     Option(getUserDataUnprotected(FileContextUtil.CONTAINING_FILE_KEY))
   }
 
+  /**
+    * returns the corresponding VirtualFile
+    * @return the VirtualFile or none if not found
+    */
   def getVirtualFile: Option[VirtualFile] = getPsiFile.map(_.getVirtualFile)
 
+  /**
+    * creates the AST
+    */
   def doParse(root: IElementType): ASTNode = {
     val marker = mark()
     while (!eof()) parseFieldOrStanza()
@@ -35,6 +49,10 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     getTreeBuilt
   }
 
+  /**
+    * parses a top-level field (e.g. name, version, synopsis) or a stanza (e.g. library, source-repository, test-suite).
+    * logs an error and consumes the line of the token is unexpected.
+    */
   def parseFieldOrStanza(): Unit = {
     if (topLevelField() || parseStanza()) return
     // Attempt to recover by reporting an error and just consuming the line.
@@ -44,6 +62,10 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     }
   }
 
+  /**
+    * parses a stanza (e.g. library, source-repository, test-suite).
+    * @return true if parsed a stanza, false if not
+    */
   def parseStanza(): Boolean = (
     flagDecl()
     || library()
@@ -54,10 +76,18 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     || invalidStanza()
   )
 
+  /**
+    * tries to parse a `library` stanza.
+    * @return true if parsed, false if not
+    */
   def library(): Boolean = stanza(
     "library", LIBRARY, LIBRARY_KEY, noStanzaArgs, libraryField
   )
 
+  /**
+    * tries to parse the fields of the `library` stanza (e.g. exposed-modules)
+    * @return true if parsed, false if not
+    */
   def libraryField(): Boolean = (
     buildInfoField()
     || exposedModules()
@@ -65,43 +95,75 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     || reexportedModules()
   )
 
+  /**
+    * tries to parse a `executable` stanza.
+    * @return true if parsed, false if not
+    */
   def executable(): Boolean = stanza(
     "executable", EXECUTABLE, EXECUTABLE_KEY,
     stanzaNameArg(EXECUTABLE_NAME), executableField
   )
 
+  /**
+    * tries to parse the fields of the `executable` stanza (e.g. main-is)
+    * @return true if parsed, false if not
+    */
   def executableField(): Boolean = (
     buildInfoField()
     || mainIs()
   )
 
+  /**
+    * tries to parse a `test-suite` stanza.
+    * @return true if parsed, false if not
+    */
   def testSuite(): Boolean = stanza(
     "test-suite", TEST_SUITE, TEST_SUITE_KEY,
     stanzaNameArg(TEST_SUITE_NAME), testSuiteField
   )
 
+  /**
+    * tries to parse the fields of the `test-suite` stanza (e.g. main-is)
+    * @return true if parsed, false if not
+    */
   def testSuiteField(): Boolean = (
     buildInfoField()
     || mainIs()
     || field(TEST_SUITE_TYPE, TYPE_KEY, freeform)
   )
 
+  /**
+    * tries to parse a `benchmark` stanza.
+    * @return true if parsed, false if not
+    */
   def benchmark(): Boolean = stanza(
     "benchmark", BENCHMARK, BENCHMARK_KEY,
     stanzaNameArg(BENCHMARK_NAME), benchmarkField
   )
 
+  /**
+    * tries to parse the fields of the `benchmark` stanza (e.g. main-is)
+    * @return true if parsed, false if not
+    */
   def benchmarkField(): Boolean = (
     buildInfoField()
     || mainIs()
     || field(BENCHMARK_TYPE, TYPE_KEY, freeform)
   )
 
+  /**
+    * tries to parse a `source-repository` stanza.
+    * @return true if parsed, false if not
+    */
   def sourceRepo(): Boolean = stanza(
     "source-repository", SOURCE_REPO, SOURCE_REPO_KEY,
     stanzaNameArg(SOURCE_REPO_NAME), sourceRepoField
   )
 
+  /**
+    * tries to parse the fields of the `source-repository` stanza (e.g. location)
+    * @return true if parsed, false if not
+    */
   def sourceRepoField(): Boolean = (
     field(SOURCE_REPO_TYPE, TYPE_KEY, freeform)
     || field(SOURCE_REPO_LOCATION, LOCATION_KEY, freeform)
@@ -111,23 +173,42 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     || field(SOURCE_REPO_SUBDIR, SUBDIR_KEY, freeform)
   )
 
+  /**
+    * tries to parse a `flag` stanza.
+    * @return true if parsed, false if not
+    */
   def flagDecl(): Boolean = stanza(
     "flag", FLAG_DECL, FLAG, stanzaNameArg(FLAG_NAME), flagField
   )
 
+  /**
+    * tries to parse the fields of the `flag` stanza (e.g. default)
+    * @return true if parsed, false if not
+    */
   def flagField(): Boolean = (
     field(FLAG_DESCR, DESCRIPTION_KEY, freeform)
     || field(FLAG_DEFAULT, DEFAULT_KEY, boolValue)
     || field(FLAG_MANUAL, MANUAL_KEY, boolValue)
   )
 
+  /**
+    * passed if a stanza has no arguments
+    */
   val noStanzaArgs = () => {}
 
+  /**
+    * parses the stanza name argument (e.g. the name of the test-suite) or logs an error
+    * @param el the type to map the AST to
+    */
   def stanzaNameArg(el: CabalStanzaArgTokenType)(): Unit = getTokenType match {
     case _: CabalWordLikeTokenType => remapAdvance(el)
     case _ => error(s"Expected name argument")
   }
 
+  /**
+    * parses an semantically incorrect stanza that is syntactically correct
+    * @return true if parsed an invalid stanza
+    */
   def invalidStanza(): Boolean = {
     parseStanzaWithPred(getTokenType.isInstanceOf[CabalIdentTokenType] && lookAhead(1) != COLON)(
       "invalid",
@@ -137,6 +218,15 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     )
   }
 
+  /**
+    * tries to parse a stanza and marks the AST as the AST node type el if the predicate is met
+    * @param pred the predicate used to test if the stanza should be consumed
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param el the AST node type to set to
+    * @param argsParser the parser for the stanza arguments (e.g. the name of the test-suite)
+    * @param fieldParser the parser for the fields of the stanza
+    * @return false if the predicate is not met, else true
+    */
   def parseStanzaWithPred
       (pred: => Boolean)
       (stanzaType: String,
@@ -159,6 +249,15 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     true
   }
 
+  /**
+    * tries to parse a stanza and marks the AST as the AST node type el.
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param el the AST node type
+    * @param k the token type
+    * @param argsParser the parser for the stanza arguments (e.g. the name of the test-suite)
+    * @param fieldParser the parser for the fields of the stanza
+    * @return true if consumed and annotated or false if not
+    */
   def stanza
       (stanzaType: String,
        el: CabalElementType,
@@ -169,6 +268,11 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     parseStanzaWithPred(getTokenType == k)(stanzaType, el, argsParser, fieldParser)
   }
 
+  /**
+    * parses a stanza body guarded by braces
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param fieldParser the parser for the fields
+    */
   def stanzaBraceBody(stanzaType: String, fieldParser: () => Boolean): Unit = {
     var foundRBrace = false
     parseWhile(!foundRBrace) {
@@ -185,6 +289,11 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     if (getTokenType == EOL) remapAdvance(WHITE_SPACE)
   }
 
+  /**
+    * parses a stanza body guarded by indentation
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param fieldParser the parser for the fields
+    */
   def stanzaIndentBody(stanzaType: String, fieldParser: () => Boolean): Unit = {
     if (getTokenType == INDENT) {
       var indent = 0
@@ -204,12 +313,25 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     }
   }
 
+  /**
+    * parses the body of a stanza, calls either stanzaBraceBody or stanzaIndentBody depending on the style
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param fieldParser the parser for the fields
+    */
   def stanzaBody(stanzaType: String, fieldParser: () => Boolean): Unit = getTokenType match {
     case LBRACE => advanceLexer(); stanzaBraceBody(stanzaType, fieldParser)
     case EOL => remapAdvance(WHITE_SPACE); stanzaIndentBody(stanzaType, fieldParser)
     case _ => error("Expected { or end of line")
   }
 
+  /**
+    * parses a stanza in the old style
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param el the AST node type to set to
+    * @param argsParser the parser for the stanza arguments (e.g. the name of the test-suite)
+    * @param fieldParser the parser for the fields of the stanza
+    * @return true
+    */
   def oldStyleStanza
       (stanzaType: String,
        el: CabalElementType,
@@ -233,6 +355,12 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     true
   }
 
+  /**
+    * tries to parse an cabal-file if-expression
+    * @param stanzaType
+    * @param fieldParser
+    * @return
+    */
   def ifExpr(stanzaType: String, fieldParser: () => Boolean): Boolean = {
     if (getTokenType != IF) return false
     val m = mark()
