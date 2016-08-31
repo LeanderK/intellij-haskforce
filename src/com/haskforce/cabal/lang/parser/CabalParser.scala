@@ -357,9 +357,9 @@ final class CabalPsiBuilder(builder: PsiBuilder)
 
   /**
     * tries to parse an cabal-file if-expression
-    * @param stanzaType
-    * @param fieldParser
-    * @return
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param fieldParser the parser for the fields
+    * @return true if parsed an IF, false if not
     */
   def ifExpr(stanzaType: String, fieldParser: () => Boolean): Boolean = {
     if (getTokenType != IF) return false
@@ -375,12 +375,20 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     true
   }
 
+  /**
+    * parses the if-condition
+    */
   def ifCond(): Unit = {
     val m = mark()
     boolExpr()
     m.done(IF_COND)
   }
 
+  /**
+    * parses the if-body
+    * @param stanzaType the type of the stanza (e.g library) as a String
+    * @param fieldParser the parser for the fields
+    */
   def ifBody(stanzaType: String, fieldParser: () => Boolean): Unit = {
     if (getTokenType != INDENT) {
       error("Expected indent")
@@ -402,6 +410,9 @@ final class CabalPsiBuilder(builder: PsiBuilder)
     }
   }
 
+  /**
+    * parses the boolean expression inside the if/else-condition
+    */
   def boolExpr(): Unit = {
     if (boolLit() || funcCall() || negation() || parens(boolExpr)) {
       if (oneOf(AND, OR)) {
