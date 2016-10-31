@@ -43,6 +43,11 @@ abstract public class HaskellCompletionTestBase extends HaskellLightPlatformCode
         cacheLoaders = new ArrayList<Function<HaskellCompletionCacheLoader.Cache, Void>>(0);
     }
 
+    protected HaskellCompletionTestBase(String srcName, boolean noHaskellBaseDirectory) {
+        super(srcName, srcName, noHaskellBaseDirectory);
+        cacheLoaders = new ArrayList<Function<HaskellCompletionCacheLoader.Cache, Void>>(0);
+    }
+
     protected HaskellCompletionTestBase() {
         this("codeInsight");
     }

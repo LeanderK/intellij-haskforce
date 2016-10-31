@@ -78,7 +78,7 @@ public class HaskellBuildOptions {
     public String myStackFile = DEFAULT_STACK_FILE;
 
     @Tag("version")
-    public Integer buildOptsVersion = CURRENT_VERSION;
+    public Integer buildOptsVersion = -1;
 
     @Override
     public String toString() {

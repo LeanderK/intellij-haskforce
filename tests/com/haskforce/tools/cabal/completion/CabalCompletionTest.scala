@@ -43,7 +43,7 @@ class CabalCompletionTest extends CabalCompletionTestBase {
 }
 
 class CabalCompletionTestBase
-  extends HaskellCompletionTestBase(FileUtil.join("cabal", "completion")) {
+  extends HaskellCompletionTestBase(FileUtil.join("tools", "cabal", "completion"), true) {
 
   override protected def getFileType = CabalFileType.INSTANCE
 

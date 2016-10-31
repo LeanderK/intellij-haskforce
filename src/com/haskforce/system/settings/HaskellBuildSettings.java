@@ -37,6 +37,9 @@ public class HaskellBuildSettings implements PersistentStateComponent<HaskellBui
     @Override
     public void loadState(HaskellBuildOptions state) {
         myBuildOptions = state;
+        if (myBuildOptions.buildOptsVersion == -1) {
+            myBuildOptions.buildOptsVersion = HaskellBuildOptions.CURRENT_VERSION;
+        }
     }
 
     public boolean isCabalEnabled() {
